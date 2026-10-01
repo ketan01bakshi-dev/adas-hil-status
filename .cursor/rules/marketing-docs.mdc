@@ -1,0 +1,57 @@
+---
+description: Marketing documentation, project messaging, feature guides, and copywriting. Use when writing positioning, landing copy, release notes for users, onboarding, feature explainers, or campaign language.
+globs: **/marketing/**, **/copy/**, **/content/**, **/changelog/**, **/blog/**, **/landing/**, **/*messaging*, **/*positioning*, **/*.md, **/*.mdx, **/README.md
+alwaysApply: true
+---
+
+# Marketing docs — messaging, feature guides, copy
+
+Always-on for this workspace. Apply these standards whenever the task is messaging or user-facing copy. Technical accuracy still follows `@tech-docs` and the source-grounding contract.
+
+## Source grounding (NotebookLM)
+
+- Claims about the product must come from sources: shipped code, existing messaging docs, user brief, or approved copy decks.
+- Cite the origin of each feature name, benefit, and proof point: ``[`path` — section]`` or `[Source: user message]`.
+- **Never invent** customers, testimonials, quotes, logos, awards, rankings, performance numbers, pricing, or compliance badges.
+- If a differentiator, SLA, or integration is not in sources, write `Not in sources` or mark a line `Proposal` — do not publish it as fact.
+- When engineering docs and marketing docs disagree, flag the conflict and cite both. Do not “smooth” it away.
+
+## Voice and messaging
+
+- Use the project’s existing product name, audience, and tone when those appear in README, marketing files, or the user brief.
+- If no voice guide exists, write plain, specific, adult prose. No slang the product does not already use. No fake founder story.
+- Prefer verbs the product actually performs (“Export a CSV of your queue”) over vague claims (“Supercharge your workflow”).
+- Do not rename features. Feature labels must match UI strings or sourced docs.
+
+## Feature guides
+
+- Document flows that exist in the UI or are specified in the brief. Step counts and screenshots must match real screens.
+- Empty, error, permission, and loading states: describe only those implemented or explicitly specified.
+- Platform notes (web vs Android) must match sourced apps. Do not assume feature parity.
+- Link to the implementing surface (`path`, route, or screen composable) so copy stays checkable.
+
+## Copywriting craft
+
+- One idea per sentence. Lead with the user outcome, then the sourced mechanism.
+- Headlines: concrete, scannable, true. No all-caps, no clickbait, no “Welcome to your app.”
+- CTAs must match a real action in the product (“Create project”, “Start recording”). Do not invent funnels or buttons.
+- Lists of benefits: each bullet maps to a sourced capability. Drop bullets you cannot cite.
+- Inclusive, precise language. No unsubstantiated “best”, “#1”, or “used by thousands.”
+
+## Structure for a messaging brief
+
+When asked for positioning, produce only sections you can ground:
+
+1. **Audience** — who the sources say this is for (or `Not in sources`).
+2. **Problem** — only if stated by the user or product docs.
+3. **Product** — what the software actually does, cited.
+4. **Features** — sourced capabilities, not a roadmap dump unless the user asked for proposals.
+5. **Proof** — only sourced metrics, customers, or quotes; otherwise omit the section.
+6. **CTA** — sourced action.
+
+## What not to do
+
+- No lorem ipsum. No competitor smear unless the user supplied sourced comparison facts.
+- No health, legal, or financial promises that are not in sources (especially for healthcare-related copy).
+- No “coming soon” features unless the user or a sourced roadmap says so, and label them as not shipped.
+- Do not rewrite technical meaning to sound friendlier if that would make the claim false.

@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>__TITLE__ · HIL status</title>
+<style>
+:root{
+  --bg:#f3f5f8;--panel:#fff;--ink:#16191d;--muted:#5f6873;--faint:#8a939d;--line:#e1e5ea;
+  --ok:#17834f;--ok-bg:#e2f4ea;--warn:#8f5d00;--warn-bg:#fdf0d5;--bad:#c0261a;--bad-bg:#fde3e0;
+  --off:#6b7480;--off-bg:#eceff2;--accent:#1f4f8f;--shadow:0 1px 2px rgba(16,24,40,.06);
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0f1215;--panel:#181c20;--ink:#e8eaed;--muted:#a1aab4;--faint:#77808a;--line:#2a3036;
+  --ok:#5ad49a;--ok-bg:#12301f;--warn:#f3c66b;--warn-bg:#352a10;--bad:#ff8b80;--bad-bg:#3b1714;
+  --off:#9aa3ad;--off-bg:#252a30;--accent:#8db6f0;--shadow:none}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+main{max-width:1280px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:22px;margin:0;letter-spacing:-.01em}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 12px;font-weight:600}
+code,.mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:12px}
+.muted{color:var(--muted)}.faint{color:var(--faint);font-size:12px}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:18px}
+.top .right{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.sub{color:var(--muted);font-size:13px;margin-top:2px}
+button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--panel);color:var(--ink);
+  border-radius:8px;padding:7px 12px;cursor:pointer;min-height:36px}
+button:hover{border-color:var(--accent)}button:disabled{opacity:.6;cursor:wait}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.pill.big{font-size:15px;padding:6px 16px}
+.ok{color:var(--ok);background:var(--ok-bg)}.warn{color:var(--warn);background:var(--warn-bg)}
+.bad{color:var(--bad);background:var(--bad-bg)}.off{color:var(--off);background:var(--off-bg)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:16px}
+@media (max-width:980px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:520px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow)}
+.kpi .v{font-size:22px;font-weight:650;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:12px;color:var(--muted)}
+.kpi.ok .v{color:var(--ok)}.kpi.warn .v{color:var(--warn)}.kpi.bad .v{color:var(--bad)}
+.kpi.ok,.kpi.warn,.kpi.bad{background:var(--panel)}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:16px;margin-bottom:16px}
+@media (max-width:860px){.row2{grid-template-columns:1fr}}
+.actions{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.actions li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;padding:10px 12px;border-radius:8px;background:var(--bg)}
+.actions .dot{width:9px;height:9px;border-radius:50%;margin-top:6px;background:currentColor}
+.actions b{font-weight:600}
+/* topology */
+.topo{display:grid;grid-template-columns:150px 1fr;gap:0;align-items:stretch}
+@media (max-width:560px){.topo{grid-template-columns:1fr}.rigbox{margin-bottom:10px}.lane{border-left:0!important;padding-left:0!important}}
+.rigbox{border:2px solid var(--accent);border-radius:10px;padding:12px;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.rigbox b{color:var(--accent)}
+.lanes{display:grid;gap:10px;padding-left:16px}
+.lane{border-left:3px solid var(--line);padding-left:14px;position:relative}
+.lane::before{content:"";position:absolute;left:-19px;top:14px;width:16px;border-top:3px solid var(--line)}
+.lane .name{font-size:12px;color:var(--muted);margin-bottom:6px}
+.nodes{display:flex;flex-wrap:wrap;gap:8px}
+.node{border:1px solid var(--line);border-radius:8px;padding:6px 10px;display:flex;align-items:center;gap:8px;background:var(--panel)}
+.node .sw{width:10px;height:10px;border-radius:3px}
+.node.unknown{border-style:dashed}
+.sw.ok{background:var(--ok)}.sw.warn{background:var(--warn)}.sw.bad{background:var(--bad)}.sw.off{background:var(--off)}
+/* ECU cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.card .bar{height:4px}
+.bar.ok{background:var(--ok)}.bar.warn{background:var(--warn)}.bar.bad{background:var(--bad)}.bar.off{background:var(--off)}
+.card .head{display:flex;gap:12px;align-items:center;padding:14px 14px 10px}
+.icon{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;background:var(--bg);color:var(--accent);flex:none}
+.icon svg{width:24px;height:24px}
+.card .title{min-width:0;flex:1}.card .title b{display:block;font-size:15px}
+.card dl{margin:0;padding:0 14px 12px;display:grid;grid-template-columns:auto 1fr;gap:6px 12px}
+.card dt{color:var(--muted);font-size:12px;padding-top:1px}.card dd{margin:0;overflow-wrap:anywhere}
+.card .foot{margin-top:auto;padding:10px 14px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.mis{color:var(--warn);font-weight:600;white-space:nowrap}
+.was{display:block;color:var(--faint);text-decoration:line-through;white-space:nowrap}
+.src{font-size:11px;color:var(--faint);margin-left:6px}
+/* tables */
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:12px;color:var(--muted);font-weight:600}
+tr:last-child td{border-bottom:0}
+td.okc{color:var(--ok);font-weight:600}td.misc{color:var(--warn);font-weight:600}
+/* history */
+.hist{display:grid;grid-template-columns:max-content 1fr;gap:4px 12px;align-items:center}
+.cells{display:flex;gap:3px;flex-wrap:nowrap;overflow:hidden;justify-content:flex-end}
+.cell{width:12px;height:16px;border-radius:3px;flex:none}
+.cell.ok{background:var(--ok)}.cell.warn{background:var(--warn)}.cell.bad{background:var(--bad)}.cell.off{background:var(--off)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.stale{color:var(--bad);font-weight:600}
+footer{margin-top:20px;color:var(--faint);font-size:12px}
+.section{margin-bottom:16px}
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <div><h1 id="rig"></h1><div class="sub" id="sub"></div></div>
+    <div class="right">
+      <span id="ago" class="faint"></span>
+      <button id="refresh" hidden>Re-check now</button>
+      <span id="overall" class="pill big"></span>
+    </div>
+  </header>
+
+  <section class="kpis" id="kpis"></section>
+
+  <section class="row2">
+    <div class="panel"><h2>Action needed</h2><ul class="actions" id="actions"></ul></div>
+    <div class="panel"><h2>Bench topology</h2><div class="topo" id="topo"></div></div>
+  </section>
+
+  <h2>ECUs on the bench</h2>
+  <section class="cards" id="cards"></section>
+
+  <section class="panel section"><h2>Software baseline vs inventory</h2><div class="tw"><table id="baseline"></table></div></section>
+
+  <section class="panel section" id="histPanel"><h2>History</h2><div class="hist" id="hist"></div>
+    <div class="legend"><span><i class="cell ok"></i>OK</span><span><i class="cell warn"></i>Version mismatch / not probed</span>
+    <span><i class="cell bad"></i>Not powered / no response / error</span></div></section>
+
+  <footer id="foot"></footer>
+</main>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+(() => {
+  let D = JSON.parse(document.getElementById("data").textContent);
+  const $ = (id) => document.getElementById(id);
+  const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const TONE = {OK:"ok",PASS:"ok",VERSION_MISMATCH:"warn",NOT_PROBED:"warn",WARN:"warn",
+                NO_RESPONSE:"bad",NOT_POWERED:"bad",ERROR:"bad",FAIL:"bad"};
+  const LABEL = {OK:"Connected",VERSION_MISMATCH:"Version mismatch",NO_RESPONSE:"No response",
+                 NOT_POWERED:"Not powered",NOT_PROBED:"Not probed",ERROR:"Error"};
+  const tone = (s) => TONE[s] || "off";
+
+  const ICONS = {
+    camera:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h3l2-3h8l2 3h3v11H3z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+    radar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20V12"/><path d="M7.5 15.5a6.4 6.4 0 0 1 9 0"/><path d="M4.6 12.6a10.5 10.5 0 0 1 14.8 0"/><path d="M1.8 9.8a14.5 14.5 0 0 1 20.4 0"/></svg>',
+    lidar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="7" y="9" width="10" height="9" rx="2"/><path d="M9 9V6h6v3"/><path d="M3 5l4 4M21 5l-4 4M2 12h3M19 12h3"/></svg>',
+    ecu:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></svg>',
+  };
+  const kind = (e) => {
+    const t = (e.name + " " + e.ecu_type).toLowerCase();
+    if (t.includes("lidar")) return "lidar";
+    if (t.includes("radar")) return "radar";
+    if (t.includes("cam")) return "camera";
+    return "ecu";
+  };
+  const power = (e) => e.supply_current_a == null ? '<span class="muted">not measured</span>'
+    : `${e.powered ? "ON" : "OFF"} · ${Number(e.supply_current_a).toFixed(2)} A`;
+  const link = (e) => {
+    const via = {can:"UDS on CAN",doip:"UDS on DoIP",tcp:"Ethernet",none:"power only"}[e.transport] || "-";
+    return e.response_ms == null ? `<span class="muted">${esc(via)}</span>` : `${Number(e.response_ms).toFixed(1)} ms · ${esc(via)}`;
+  };
+  const isMis = (e, f) => (e.mismatches || []).some((m) => m.startsWith(f));
+  const ver = (e, f) => {
+    const exp = e.expected[f] || "", act = e.actual[f];
+    if (act == null) return exp ? `${esc(exp)}<span class="src">from file</span>` : '<span class="muted">-</span>';
+    if (exp && isMis(e, f)) return `<span class="was">${esc(exp)} <span class="src">inventory</span></span><span class="mis">${esc(act)}</span><span class="src">on ECU</span>`;
+    return `${esc(act)}<span class="src">read live</span>`;
+  };
+
+  function actions(s) {
+    const out = [];
+    const rigState = String(s.rig.simulation_state || "");
+    if (s.rig.error) out.push(["bad", `<b>Rig backend unavailable.</b> ${esc(s.rig.error)}`]);
+    else if (rigState && !rigState.toUpperCase().includes("RUNNING"))
+      out.push(["bad", `<b>HIL simulation not running</b> (${esc(rigState)}). Start the application before testing.`]);
+    for (const e of s.ecus) {
+      const n = `<b>${esc(e.name)}</b>`;
+      if (e.state === "NOT_POWERED") out.push(["bad", `${n} has no supply current (${esc(e.detail)}). Check its power channel, fuse and harness.`]);
+      else if (e.state === "NO_RESPONSE") out.push(["bad", `${n} is powered but silent. Check bus wiring and termination, the DoIP IP/VLAN, or whether it is stuck in the bootloader. <span class="faint">${esc(e.detail)}</span>`]);
+      else if (e.state === "ERROR") out.push(["bad", `${n}: protocol error. ${esc(e.detail)}`]);
+      else if (e.state === "VERSION_MISMATCH")
+        for (const f of ["sw_version", "hw_version"]) if (isMis(e, f))
+          out.push(["warn", `${n} reports ${f === "sw_version" ? "SW" : "HW"} <code>${esc(e.actual[f])}</code>, inventory says <code>${esc(e.expected[f])}</code>. ${f === "sw_version" ? "Flash the listed release or update the inventory sheet." : "Swap the unit or correct the inventory sheet."}`]);
+      else if (e.state === "NOT_PROBED") out.push(["warn", `${n} is in the inventory but has no access entry in the rig config, so it was not checked live.`]);
+      if (e.detail && e.detail.includes("read failed")) out.push(["warn", `${n}: some identification DIDs could not be read. <span class="faint">${esc(e.detail)}</span>`]);
+    }
+    for (const id of s.unknown_responders) out.push(["warn", `Unlisted CAN node <code>${esc(id)}</code> answers diagnostics. Identify it, then add it to the config and inventory or disconnect it.`]);
+    for (const n of s.notes) if (n.includes("not in the inventory file")) out.push(["warn", esc(n)]);
+    return out;
+  }
+
+  function render() {
+    const s = D.status;
+    document.title = `${s.overall} · ${s.rig_name}`;
+    $("rig").textContent = s.rig_name;
+    $("sub").innerHTML = `backend <code>${esc(s.backend)}</code> · inventory <code>${esc(s.inventory_file.split(/[\\/]/).pop())}</code> · checked ${esc(new Date(s.timestamp).toLocaleString())}`;
+    $("overall").className = `pill big ${tone(s.overall)}`;
+    $("overall").textContent = s.overall;
+
+    const n = s.ecus.length, conn = s.ecus.filter((e) => e.connected).length;
+    const mism = s.ecus.filter((e) => e.state === "VERSION_MISMATCH").length;
+    const sim = String(s.rig.simulation_state ?? (s.rig.error ? "unavailable" : "-"));
+    const simOk = sim.toUpperCase().includes("RUNNING");
+    const kl30 = s.rig.kl30_voltage_v;
+    const bus = s.bus.state || (s.bus.error ? "error" : "-");
+    const kpis = [
+      [`${conn}/${n}`, "ECUs connected", conn === n ? "ok" : "bad"],
+      [mism, "Version mismatches", mism ? "warn" : "ok"],
+      [s.unknown_responders.length, "Unlisted CAN nodes", s.unknown_responders.length ? "warn" : "ok"],
+      [simOk ? "Running" : esc(sim), "HIL simulation", simOk ? "ok" : "bad"],
+      [kl30 == null ? "-" : `${Number(kl30).toFixed(1)} V`, `KL30 supply${s.rig.kl15 ? " · KL15 " + esc(s.rig.kl15) : ""}`, kl30 == null ? "" : (kl30 >= 11 && kl30 <= 15.5 ? "ok" : "bad")],
+      [esc(bus), "Diagnostic CAN", bus === "ACTIVE" ? "ok" : bus === "-" ? "" : "bad"],
+    ];
+    $("kpis").innerHTML = kpis.map(([v, l, t]) => `<div class="kpi ${t}"><div class="l">${l}</div><div class="v">${v}</div></div>`).join("");
+
+    const acts = actions(s);
+    $("actions").innerHTML = acts.length
+      ? acts.map(([t, h]) => `<li class="${t}" style="background:var(--bg)"><span class="dot" style="color:var(--${t})"></span><span style="color:var(--ink)">${h}</span></li>`).join("")
+      : `<li><span class="dot" style="color:var(--ok)"></span><span>Nothing to do. Every ECU is connected and matches the inventory.</span></li>`;
+
+    // topology: rig -> buses -> nodes
+    const lanes = {"Automotive Ethernet": [], "Diagnostic CAN": [], "Not configured": []};
+    for (const e of s.ecus) {
+      const lane = e.transport === "can" ? "Diagnostic CAN" : (e.transport === "doip" || e.transport === "tcp") ? "Automotive Ethernet" : "Not configured";
+      lanes[lane].push(`<span class="node" title="${esc(e.state)}"><i class="sw ${tone(e.state)}"></i>${esc(e.name)}</span>`);
+    }
+    for (const id of s.unknown_responders)
+      lanes["Diagnostic CAN"].push(`<span class="node unknown" title="not in config"><i class="sw warn"></i>${esc(id)} ?</span>`);
+    const laneHtml = Object.entries(lanes).filter(([, v]) => v.length).map(([k, v]) =>
+      `<div class="lane"><div class="name">${k}${k === "Diagnostic CAN" && s.bus.state ? " · " + esc(s.bus.state) : ""}</div><div class="nodes">${v.join("")}</div></div>`).join("");
+    $("topo").innerHTML = `<div class="rigbox"><b>dSPACE HIL</b><span class="faint">${esc(s.backend === "sim" ? "virtual bench" : "XIL API")}</span>
+      <span class="pill ${simOk ? "ok" : "bad"}" style="align-self:flex-start">${simOk ? "running" : "not running"}</span></div><div class="lanes">${laneHtml}</div>`;
+
+    $("cards").innerHTML = s.ecus.map((e) => `
+      <article class="card"><div class="bar ${tone(e.state)}"></div>
+        <div class="head"><div class="icon">${ICONS[kind(e)]}</div>
+          <div class="title"><b>${esc(e.name)}</b><span class="muted">${esc(e.ecu_type || "-")}</span></div>
+          <span class="pill ${tone(e.state)}">${esc(LABEL[e.state] || e.state)}</span></div>
+        <dl>
+          <dt>Power</dt><dd>${power(e)}</dd>
+          <dt>Link</dt><dd>${link(e)}</dd>
+          <dt>SW</dt><dd>${ver(e, "sw_version")}</dd>
+          <dt>HW</dt><dd>${ver(e, "hw_version")}</dd>
+          <dt>Serial</dt><dd class="mono">${esc(e.actual.serial_number || "-")}</dd>
+          <dt>Address</dt><dd class="mono">${esc(e.address)}</dd>
+        </dl>
+        <div class="foot">${esc(e.detail || "")}</div>
+      </article>`).join("");
+
+    const cmp = (e, f) => {
+      const exp = e.expected[f], act = e.actual[f];
+      if (act == null) return [esc(exp || "-"), '<td class="muted">not readable</td>'];
+      return [esc(exp || "-"), isMis(e, f) ? `<td class="misc">${esc(act)}</td>` : `<td class="okc">${esc(act)}</td>`];
+    };
+    $("baseline").innerHTML = `<thead><tr><th>ECU</th><th>SW in inventory</th><th>SW on ECU</th><th>HW in inventory</th><th>HW on ECU</th><th>Serial</th></tr></thead><tbody>` +
+      s.ecus.map((e) => { const [se, sa] = cmp(e, "sw_version"), [he, ha] = cmp(e, "hw_version");
+        return `<tr><td><b>${esc(e.name)}</b></td><td>${se}</td>${sa}<td>${he}</td>${ha}<td class="mono">${esc(e.actual.serial_number || "-")}</td></tr>`; }).join("") + "</tbody>";
+
+    const H = D.history.slice(-60);
+    if (H.length < 2) { $("histPanel").hidden = true; }
+    else {
+      $("histPanel").hidden = false;
+      const cell = (st, t) => `<i class="cell ${tone(st || "")}" title="${esc(new Date(t).toLocaleTimeString())} · ${esc(st || "absent")}"></i>`;
+      const rows = [["Bench", H.map((h) => cell(h.overall, h.t))]];
+      for (const e of s.ecus) rows.push([e.name, H.map((h) => cell(h.ecus[e.name], h.t))]);
+      $("hist").innerHTML = rows.map(([k, c]) => `<span class="faint">${esc(k)}</span><div class="cells">${c.join("")}</div>`).join("") +
+        `<span></span><span class="faint" style="text-align:right">last ${H.length} checks · newest on the right</span>`;
+    }
+    $("foot").textContent = "Read-only check: TesterPresent + ReadDataByIdentifier, XIL API variable reads. Never starts/stops the simulation or switches power.";
+  }
+
+  function tick() {
+    const age = Math.max(0, Math.round((Date.now() - new Date(D.status.timestamp)) / 1000));
+    const txt = age < 60 ? `${age} s ago` : age < 3600 ? `${Math.round(age / 60)} min ago` : new Date(D.status.timestamp).toLocaleString();
+    const stale = D.live && D.interval_s && age > D.interval_s * 3;
+    $("ago").innerHTML = D.live ? `${stale ? '<span class="stale">stale · </span>' : ""}updated ${txt} · every ${D.interval_s} s` : `snapshot · ${txt}`;
+  }
+
+  async function poll() {
+    try { D = await (await fetch("api/status", {cache: "no-store"})).json(); render(); } catch (_) { /* keep last view; tick() shows staleness */ }
+  }
+
+  render(); tick(); setInterval(tick, 1000);
+  if (D.live) {
+    const b = $("refresh"); b.hidden = false;
+    b.onclick = async () => { b.disabled = true; b.textContent = "Checking…";
+      try { await fetch("api/refresh", {method: "POST"}); await poll(); } finally { b.disabled = false; b.textContent = "Re-check now"; } };
+    setInterval(poll, Math.max(2, D.interval_s / 2) * 1000);
+  }
+})();
+</script>
+</body>
+</html>

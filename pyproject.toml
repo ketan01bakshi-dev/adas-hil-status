@@ -1,0 +1,16 @@
+[project]
+name = "adas-hil-status"
+version = "0.1.0"
+description = "ADAS HIL bench status: connected ECUs, power, and SW/HW versions vs the inventory file"
+requires-python = ">=3.11"
+dependencies = ["python-can>=4.0"]
+
+[project.optional-dependencies]
+xil = ["pythonnet>=3.0"]
+
+[project.scripts]
+hil-status = "hil_status.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

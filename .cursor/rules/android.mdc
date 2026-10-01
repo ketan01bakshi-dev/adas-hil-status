@@ -1,0 +1,60 @@
+---
+description: Kotlin, Jetpack Compose, and MVVM standards for Android. Use when editing Android apps, Compose screens, ViewModels, UI state, repositories, Gradle, manifests, or Kotlin source.
+globs: **/*.kt, **/*.kts, **/AndroidManifest.xml, **/compose*.kt, **/build.gradle, **/build.gradle.kts, **/settings.gradle.kts, **/gradle.properties, **/gradle/**, **/*.xml, **/res/**, **/android/**, **/app/src/**
+alwaysApply: true
+---
+
+# Android — Kotlin, Jetpack Compose, MVVM
+
+Always-on for this workspace. Apply these standards whenever the task involves Android. If the task is not Android, do not force Kotlin/Compose choices; still obey source grounding.
+
+## Source grounding (NotebookLM)
+
+- Read the module, Gradle files, existing ViewModels, and Compose screens before changing architecture or APIs. Cite ``[`path` — class/function]``.
+- Do not invent Jetpack, Compose, Hilt, Navigation, or Material APIs. Confirm against the project’s dependency versions and existing call sites.
+- Package names, resource names, routes, and feature flags come from the repo or the user, never from a typical-app template.
+- Do not claim runtime behavior (permissions, lifecycle, navigation back stack) without reading the corresponding source.
+- If a pattern is not in the project (Hilt vs Koin, XML vs Compose), say `Not in sources` and follow what **is** in the project.
+
+## Architecture (MVVM)
+
+Unidirectional data flow. New features follow the layers already present; default when the repo is greenfield:
+
+```
+Composable screen  →  ViewModel (UI state + events)  →  Repository  →  data source
+```
+
+- **Composable:** rendering, window insets, navigation callbacks. No business rules, no repository calls, no `viewModelScope` work.
+- **ViewModel:** holds `StateFlow`/`UiState`, maps domain results, handles user events. Survives config change. No Android `View` or `Context` except `Application` where the project already does that.
+- **Repository:** single API for the screen’s data. Orchestrates local/remote sources. No Compose imports.
+- **UiState:** immutable `data class` and/or sealed types for loading / content / error. Expose one state stream per screen unless the module already splits them.
+- Collect in Compose with `collectAsStateWithLifecycle` (or the project’s existing collector). Do not use `collectAsState` in new code if lifecycle-aware APIs are on the classpath.
+
+## Compose UI
+
+- Material 3 components and theme from this module’s `Theme`/`Color`/`Type` files. Do not introduce a second theme.
+- Every public composable takes `modifier: Modifier = Modifier` as the first optional parameter after required inputs.
+- Hoist state. Stateless composables plus a stateful wrapper when the screen needs a ViewModel.
+- Side effects: `LaunchedEffect`, `snapshotFlow`, `DisposableEffect` only. Never start coroutines or I/O during composition.
+- Previews: `@Preview` (and night/font-scale when the module already does) with fake `UiState` clearly labeled as preview data.
+- Lists: `LazyColumn`/`LazyRow` with stable keys from sourced IDs. Do not use `Box`/`Column` of unbounded items for long lists.
+
+## Kotlin
+
+- Idiomatic Kotlin: data classes, sealed hierarchies, named arguments, `val` by default.
+- Coroutines + `Flow` for async. `viewModelScope` in ViewModels; `lifecycleScope` only where the project already uses it.
+- Nulls: prefer explicit sealed errors over `!!`. Do not swallow exceptions in repositories.
+- Match existing DI (Hilt, Koin, manual). Do not add a DI framework that is not already in Gradle.
+
+## Resources and Gradle
+
+- New UI is Compose, not XML layouts, unless the surrounding feature is still XML.
+- Strings in `strings.xml` (or the module’s sourced string system) when the app already externalizes copy. Do not hardcode user-visible English in Kotlin if resources are the pattern.
+- Gradle changes must match existing catalogs (`libs.versions.toml` or buildscripts). Cite the catalog entry you are using.
+
+## What not to do
+
+- No God-ViewModels that own multiple unrelated screens.
+- No `GlobalScope`, `runBlocking` on the main thread, or I/O in composables.
+- No new navigation library if Navigation Compose (or the project’s router) already exists.
+- No production secrets, API keys, or healthcare PHI in source, logs, or previews.

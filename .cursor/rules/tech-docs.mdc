@@ -1,0 +1,82 @@
+---
+description: Technical documentation standards for API references, OpenAPI/JSON schemas, Mermaid architecture diagrams, and mind maps. Use when writing or updating docs, READMEs, schema files, diagrams, or developer references.
+globs: **/*.md, **/*.mdx, **/*.mmd, **/*.mermaid, **/docs/**, **/documentation/**, **/*openapi*, **/*swagger*, **/*.proto, **/*.graphql, **/*.gql, **/*.schema.json, **/*schema*.json, **/*schema*.yml, **/*schema*.yaml, **/api/**/*.yaml, **/api/**/*.yml, **/adr/**, **/architecture/**
+alwaysApply: true
+---
+
+# Technical docs — APIs, diagrams, schemas, mind maps
+
+Always-on for this workspace. Apply these standards whenever the task is technical documentation or diagrams. If the task is product marketing, use `@marketing-docs` for voice and claims; this rule still governs technical accuracy.
+
+## Source grounding (NotebookLM)
+
+- Document **only** what is in sources: source code, existing OpenAPI/GraphQL/proto, config, and user-provided specs.
+- Every endpoint, field, type, status code, and diagram node must map to a cited source. Format: ``[`path` — symbol or route]``.
+- If code and an existing doc disagree, cite both, call out the drift, and prefer **code** unless the user explicitly treats the spec as canonical.
+- Never document planned, typical, or “standard REST” behavior as if it shipped. Label proposals as `Proposal`.
+- If you cannot find a handler, schema, or table, write `Not in sources` instead of an invented section.
+
+## API references
+
+- Derive paths, methods, auth, and payloads from route handlers, clients, or the canonical spec file in the repo.
+- Include only fields that exist on the sourced type/schema. Do not add `id`, `createdAt`, or pagination wrappers because they are common.
+- Error responses: list codes and bodies that appear in source. Do not invent a generic error envelope.
+- Examples must be consistent with the schema. Do not use dummy emails, PHI, or live secrets.
+- Link to the implementing file, not to a guessed URL.
+
+## Schemas
+
+- JSON Schema, OpenAPI, GraphQL, and protobuf edits must round-trip to real types. Name fields exactly as in code.
+- Required vs optional follows source nullability and validation, not intuition.
+- Versioning: use the version already in the spec. Do not bump versions unless the user asked or the spec’s own rules require it.
+- When generating a schema from code, state the generator path or the files you read.
+
+## Mermaid diagrams
+
+Grounded architecture only. Each node is a real module, service, screen, or store.
+
+- Use `flowchart`, `sequenceDiagram`, `classDiagram`, `erDiagram`, or `stateDiagram-v2` as appropriate.
+- No spaces in node IDs. Use quoted labels for display text.
+- Do not add components that are not in the repo (extra caches, queues, auth providers) unless marked `Proposal`.
+- Keep diagrams readable: prefer several small diagrams over one unreadable graph.
+- After writing Mermaid, sanity-check that every identifier appears in a cited file or in the user’s brief.
+
+Example shape (replace names from sources):
+
+```mermaid
+flowchart LR
+  subgraph client [Client]
+    UI[UiLayer]
+  end
+  subgraph backend [Backend]
+    API[ApiModule]
+  end
+  UI --> API
+```
+
+## Mind maps
+
+Use Mermaid `mindmap` for topic maps of **sourced** concepts (modules, features that exist, documented domains).
+
+```mermaid
+mindmap
+  root((System))
+    SourcedModule
+      SourcedType
+```
+
+- One idea per node. Node text comes from real names (package, feature flag, doc heading).
+- Depth reflects actual structure, not a generic product taxonomy.
+- If a branch is inferred, prefix it with `Proposal:`.
+
+## Doc structure
+
+- Lead with the behavior or contract, then the sourced details.
+- Headings match the product’s real names. No “Overview of the system” filler.
+- Changelog/docs updates must describe this change, not a fictional history.
+
+## What not to do
+
+- No architecture-from-training (“add Redis and Kafka”) presented as current state.
+- No screenshots, metrics, or SLAs that were not sourced.
+- No pasting entire files into docs; cite paths and the relevant excerpt.

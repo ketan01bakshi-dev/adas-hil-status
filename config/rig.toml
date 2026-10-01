@@ -1,0 +1,75 @@
+# ADAS HIL bench config: how to reach each ECU listed in the inventory file.
+# backend = "sim" runs on any laptop (virtual bench). On the dSPACE PC set backend = "xil"
+# (or pass --backend xil) and fill in [xil] and the real addresses below.
+
+[rig]
+name = "ADAS HIL 01"
+backend = "sim"
+inventory = "../data/ecu_inventory.txt"   # relative to this file
+p2_s = 1.0          # UDS P2 timeout
+p2_star_s = 5.0     # UDS P2* timeout after NRC 0x78 (response pending)
+
+[can]                # diagnostic CAN channel (Vector / PEAK / Kvaser via python-can)
+interface = "vector"
+channel = "0"
+bitrate = 500000
+fd = false
+functional_id = 0x7DF
+discovery = true            # functional TesterPresent: lists every ECU that answers
+discovery_window_s = 0.3
+
+[doip]
+tester_address = 0x0E80
+protocol_version = 2        # 2 = ISO 13400-2:2012, 3 = :2019
+
+[xil]                # dSPACE ASAM XIL API (pythonnet). Read-only: attaches to the running app.
+vendor = "dSPACE GmbH"
+product = "XIL API"
+product_version = ""        # e.g. the release string used in your dSPACE XIL API Python demo
+port_name = "hil_status"
+port_config = ""            # MAPort configuration XML of the ADAS HIL project
+# Copy the clr.AddReference(...) strings from the XIL API Python demo of your dSPACE release:
+assemblies = []
+# Model variable paths are bench-specific; these are placeholders.
+kl30_voltage_var = "Model Root/PowerSupply/KL30/U_meas/Value"
+kl15_var = "Model Root/PowerSupply/KL15/State/Value"
+
+[ecus.ADAS_ECU]
+transport = "doip"
+host = "192.168.10.10"
+port = 13400
+logical_address = 0x1010
+current_var = "Model Root/PowerSupply/ADAS_ECU/I_meas/Value"
+min_current_a = 0.20
+
+[ecus.FRONT_CAMERA]
+transport = "can"
+tx_id = 0x7E2
+rx_id = 0x7EA
+current_var = "Model Root/PowerSupply/FRONT_CAMERA/I_meas/Value"
+min_current_a = 0.05
+
+[ecus.FRONT_RADAR]
+transport = "can"
+tx_id = 0x7E3
+rx_id = 0x7EB
+current_var = "Model Root/PowerSupply/FRONT_RADAR/I_meas/Value"
+min_current_a = 0.05
+# dids = { sw_version = "vm_sw_version", hw_version = "vm_hw_number" }   # if the OEM uses F189/F191
+
+[ecus.LIDAR]
+transport = "tcp"            # vendor Ethernet protocol, no UDS: reachability only, versions from inventory
+host = "192.168.10.30"
+port = 80
+current_var = "Model Root/PowerSupply/LIDAR/I_meas/Value"
+min_current_a = 0.30
+
+# ---- Virtual bench only (ignored by the xil backend): demo faults ----
+[sim]
+unknown_responders = [0x7EE]       # an ECU on the bus that is not in the rig config
+
+[sim.ecus.FRONT_CAMERA]
+sw_version = "CAM_SW_04.11.00"     # bench camera still runs the previous release
+
+[sim.ecus.LIDAR]
+powered = false                    # LIDAR power channel switched off

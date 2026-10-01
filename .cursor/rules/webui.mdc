@@ -1,0 +1,52 @@
+---
+description: React, Tailwind, and component design standards for web UI. Use when building or editing frontend components, pages, layouts, hooks, Tailwind styles, design systems, accessibility, or browser UI.
+globs: **/*.tsx, **/*.jsx, **/*.css, **/*.scss, **/*.module.css, **/tailwind.config.*, **/postcss.config.*, **/components.json, **/*.stories.tsx, **/*.stories.ts, **/app/**/*.ts, **/src/components/**, **/src/ui/**, **/src/app/**, **/components/**/*.ts
+alwaysApply: true
+---
+
+# Web UI — React, Tailwind, component design
+
+Always-on for this workspace. Apply these standards whenever the task involves web UI. If the task is not web UI, do not force React/Tailwind choices; still obey source grounding.
+
+## Source grounding (NotebookLM)
+
+- Treat the repo, attachments, and tool output as the only sources of record for **what** the UI is: routes, component APIs, tokens, copy, and behavior.
+- Read existing components, tokens, and pages before creating or changing UI. Cite ``[`path` — export/symbol]``.
+- Do not invent shadcn/ui, Radix, Next.js, or library APIs. Confirm against installed versions and local wrappers.
+- Do not invent product copy, feature flags, or screens. If copy is missing, mark it `Not in sources` or `Proposal`.
+- Visual claims (spacing, color, breakpoints) must match Tailwind config and existing usage, not generic palettes.
+
+## Stack
+
+- React function components and TypeScript. No class components. No `any` unless a sourced type is genuinely untyped.
+- Tailwind utility classes for styling. Do not add new global CSS, inline style objects, or CSS modules unless the file already uses them.
+- Reuse existing primitives (Button, Input, Dialog, etc.) from this repo. Do not hand-roll duplicates.
+- Match the router, state library, and folder layout already in the project. Do not introduce a new UI kit or CSS framework.
+
+## Component design
+
+- One component per file. Named exports. Props type (or interface) at the top of the file.
+- `className` is mergeable via the project’s existing `cn`/`clsx` helper when one exists; do not invent a second helper.
+- Compose; do not prop-drill through more than two layers when children or a slot will do.
+- Required UI states, grounded in real behavior: default, loading, empty, error, disabled. Do not fake data in empty states.
+- Semantic HTML: `button` for actions, `a`/`Link` for navigation, `label` tied to inputs. Icon-only controls need an accessible name.
+- Keyboard and focus: visible focus rings, `Dialog`/`Sheet` focus trap via the primitive already in the repo, do not create custom modals if a primitive exists.
+- Images: `alt` from sourced meaning; decorative images `alt=""`.
+
+## Layout and responsiveness
+
+- Mobile-first Tailwind breakpoints. Verify both a narrow viewport and desktop when layout changes.
+- Prefer flex/grid utilities already used in the codebase. Do not add magic pixel values that fight the spacing scale.
+- Keep interactive hit targets usable on touch (~44px) when the existing design system allows it.
+
+## Data and state
+
+- Derive UI from sourced state. Do not hardcode lists, names, or metrics that are not in the repo or user brief.
+- Side effects in `useEffect` only when no sourced data library (query, loader, action) already covers it.
+- Do not call backend shapes you have not read. Align form fields and API payloads with actual types/schemas.
+
+## What not to do
+
+- No lorem ipsum, “Welcome to your app,” or placeholder company names when real copy exists or was given.
+- No new animation library, icon pack, or component library unless the user asked and the repo does not already provide one.
+- No comments that restate the JSX. No drive-by refactors of unrelated components.

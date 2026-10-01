@@ -1,0 +1,7 @@
+# ADAS HIL 01 - ECU inventory (bench sheet, updated after every flash)
+# Synthetic example values. Replace with the bench's real inventory file.
+ECU Name      | Type                    | SW Version        | HW Version | Bus
+ADAS_ECU      | ADAS domain controller  | ADAS_SW_07.02.01  | HW_C2      | Automotive Ethernet (DoIP)
+FRONT_CAMERA  | Mono front camera       | CAM_SW_04.12.00   | HW_B1      | CAN
+FRONT_RADAR   | Front long-range radar  | RAD_SW_03.08.02   | HW_A3      | CAN
+LIDAR         | Front LIDAR             | LID_FW_2.4.1      | HW_REV_D   | Automotive Ethernet

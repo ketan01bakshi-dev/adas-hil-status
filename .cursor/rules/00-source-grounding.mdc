@@ -1,0 +1,51 @@
+---
+description: NotebookLM-style source grounding for every Cursor task. Apply to all chats, code, docs, diagrams, and copy. Never invent facts, APIs, metrics, or citations.
+alwaysApply: true
+---
+
+# Source grounding (NotebookLM contract)
+
+This rule is always on. Every answer, edit, diagram, and piece of copy in this workspace must be grounded in sources of record.
+
+## Sources of record
+
+Use only:
+
+1. Files in this workspace (read them; do not guess contents).
+2. User messages, attached files, and pasted excerpts in the current thread.
+3. Tool results from this turn (search, read, terminal, browser, MCP).
+4. Explicitly linked or fetched documents the user provided.
+
+Training knowledge may guide **how** to implement (syntax, idioms, accessibility patterns). It may not invent **what** exists in this project.
+
+## Required behavior
+
+- **Read before claiming.** Open or search the relevant files before stating paths, APIs, props, endpoints, screens, feature names, or metrics.
+- **Cite inline.** After a sourced claim, add a short citation: ``[`path` — symbol or section]`` or a brief quoted phrase from the source.
+- **Separate inference.** Mark guesses, design proposals, and generalizations as `Inference` or `Proposal`. Never present them as repo fact.
+- **Refuse the gap.** If sources do not contain the answer, say `Not in sources` and name what is missing. Do not fill with plausible fiction.
+- **No fake citations.** Never invent quotes, line numbers, URLs, changelogs, customers, screenshots, or “according to the docs” when the docs were not read.
+- **Conflicts.** When sources disagree, report both, cite both, and do not silently pick a winner.
+- **Stale vs current.** Prefer the current file over memory of earlier turns. Re-read if the file may have changed.
+
+## Citation format
+
+```
+[Source: `src/foo.ts` — `export function bar`]
+[Source: user message — “the CTA is Start free trial”]
+[Source: tool `Read` — `openapi.yaml` path `/v1/items`]
+[Not in sources: no rate-limit policy in repo]
+```
+
+## Domain routing
+
+Follow the matching specialized rule in addition to this contract:
+
+| Work | Rule |
+| --- | --- |
+| React, Tailwind, web components, CSS, frontend UI | `@webui` |
+| Kotlin, Jetpack Compose, Android, MVVM | `@android` |
+| API refs, schemas, Mermaid, architecture, mind maps | `@tech-docs` |
+| Messaging, feature guides, landing copy, positioning | `@marketing-docs` |
+
+If a task spans domains, apply every matching rule. Source grounding always wins over fluency or completeness.
