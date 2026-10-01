@@ -92,6 +92,42 @@ td.okc{color:var(--ok);font-weight:600}td.misc{color:var(--warn);font-weight:600
 .legend span{display:inline-flex;gap:6px;align-items:center}
 .stale{color:var(--bad);font-weight:600}
 footer{margin-top:20px;color:var(--faint);font-size:12px}
+/* tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto}
+.tabs button{border:0;border-bottom:2px solid transparent;border-radius:0;background:none;color:var(--muted);
+  padding:10px 14px;white-space:nowrap;font-weight:600}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent)}
+.tabs button .n{margin-left:6px;font-size:11px;padding:1px 7px;border-radius:999px}
+/* stacked bars */
+.stack{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--off-bg);gap:2px}
+.stack.big{height:26px;border-radius:8px}
+.stack i{display:block;height:100%}
+.s-PASS{background:var(--ok)}.s-FAIL{background:var(--bad)}.s-BLOCKED{background:var(--warn)}.s-NOT_RUN{background:var(--off)}
+.stack i+i{border-left:0}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px}
+.covrow{display:grid;grid-template-columns:90px 1fr 80px;gap:10px;align-items:center;margin-bottom:10px;font-size:13px}
+.covrow .num{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.c-VERIFIED{background:var(--ok)}.c-FAILED{background:var(--bad)}.c-PARTIAL{background:var(--warn)}
+.c-NOT_EXECUTED{background:var(--off)}.c-NO_TEST{background:transparent;border:1px dashed var(--faint)}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.filters button{min-height:30px;padding:4px 10px;font-size:12px}
+.filters button[aria-pressed=true]{border-color:var(--accent);color:var(--accent)}
+/* heat matrix */
+table.heat td,table.heat th{text-align:center}
+table.heat td:first-child,table.heat th:first-child{text-align:left}
+.hc{display:inline-grid;place-items:center;min-width:34px;height:28px;border-radius:6px;font-weight:600;font-variant-numeric:tabular-nums}
+.h0{color:var(--faint)}.h1{background:var(--bad-bg);color:var(--bad)}.h2{background:color-mix(in srgb,var(--bad) 45%,var(--bad-bg));color:#fff}
+.h3{background:var(--bad);color:#fff}
+/* clusters */
+.clusters{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;margin-bottom:16px}
+.cluster{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:var(--shadow)}
+.cluster .top2{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:8px}
+.cluster .size{font-size:26px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.cluster .sig{font-weight:600;margin:2px 0 8px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.tag{font-size:11px;padding:2px 8px;border-radius:6px;background:var(--bg);color:var(--muted)}
+.cluster ul{margin:6px 0 0;padding-left:18px;font-size:12px;color:var(--muted)}
+.why{font-size:12px;margin-top:8px;padding:8px 10px;border-radius:8px;background:var(--warn-bg);color:var(--warn)}
 .section{margin-bottom:16px}
 </style>
 </head>
@@ -106,6 +142,39 @@ footer{margin-top:20px;color:var(--faint);font-size:12px}
     </div>
   </header>
 
+  <nav class="tabs" id="tabs" role="tablist">
+    <button role="tab" data-view="bench">Bench readiness</button>
+    <button role="tab" data-view="campaign">Campaign status</button>
+    <button role="tab" data-view="coverage">Coverage</button>
+    <button role="tab" data-view="defects">Defect clustering</button>
+  </nav>
+
+  <div class="view" id="view-campaign" hidden>
+    <section class="kpis" id="c-kpis"></section>
+    <section class="panel section"><h2>Execution</h2><div id="c-bar"></div><div class="legend" id="c-legend"></div></section>
+    <section class="panel section"><h2>By feature</h2><div class="tw"><table id="c-feat"></table></div></section>
+    <p class="faint">Visibility for the test manager. Nothing here signs a release off automatically.</p>
+  </div>
+
+  <div class="view" id="view-coverage" hidden>
+    <section class="kpis" id="v-kpis"></section>
+    <section class="row2">
+      <div class="panel"><h2>By feature</h2><div id="v-feat"></div></div>
+      <div class="panel"><h2>By ASIL</h2><div id="v-asil"></div></div>
+    </section>
+    <section class="panel section"><h2>Requirements</h2>
+      <div class="filters" id="v-filters"></div>
+      <div class="tw"><table id="v-reqs"></table></div></section>
+  </div>
+
+  <div class="view" id="view-defects" hidden>
+    <section class="kpis" id="d-kpis"></section>
+    <section class="panel section"><h2>Failures by feature × ECU</h2><div class="tw"><table class="heat" id="d-heat"></table></div></section>
+    <h2>Clusters <span class="faint" style="text-transform:none;letter-spacing:0">grouped by defect ID, or by failure signature with numbers masked</span></h2>
+    <section class="clusters" id="d-clusters"></section>
+  </div>
+
+  <div class="view" id="view-bench">
   <section class="kpis" id="kpis"></section>
 
   <section class="row2">
@@ -121,6 +190,7 @@ footer{margin-top:20px;color:var(--faint);font-size:12px}
   <section class="panel section" id="histPanel"><h2>History</h2><div class="hist" id="hist"></div>
     <div class="legend"><span><i class="cell ok"></i>OK</span><span><i class="cell warn"></i>Version mismatch / not probed</span>
     <span><i class="cell bad"></i>Not powered / no response / error</span></div></section>
+  </div>
 
   <footer id="foot"></footer>
 </main>
@@ -266,6 +336,113 @@ footer{margin-top:20px;color:var(--faint);font-size:12px}
     $("foot").textContent = "Read-only check: TesterPresent + ReadDataByIdentifier, XIL API variable reads. Never starts/stops the simulation or switches power.";
   }
 
+  // ---------------- campaign / coverage / defects ----------------
+  const ST = ["PASS", "FAIL", "BLOCKED", "NOT_RUN"];
+  const ST_LABEL = {PASS: "Pass", FAIL: "Fail", BLOCKED: "Blocked", NOT_RUN: "Not run"};
+  const COV = ["VERIFIED", "FAILED", "PARTIAL", "NOT_EXECUTED", "NO_TEST"];
+  const COV_LABEL = {VERIFIED: "Verified", FAILED: "Failed", PARTIAL: "Partly executed", NOT_EXECUTED: "Not executed", NO_TEST: "No test"};
+  const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+  const kpiHtml = (items) => items.map(([v, l, t]) => `<div class="kpi ${t || ""}"><div class="l">${l}</div><div class="v">${v}</div></div>`).join("");
+  const stack = (counts, total, big) => `<div class="stack${big ? " big" : ""}" role="img" aria-label="${ST.map((s) => `${ST_LABEL[s]} ${counts[s]}`).join(", ")}">` +
+    ST.filter((s) => counts[s]).map((s) => `<i class="s-${s}" style="width:${counts[s] / total * 100}%" title="${ST_LABEL[s]}: ${counts[s]}"></i>`).join("") + "</div>";
+  let reqFilter = "ALL";
+
+  function renderCampaign(c, s) {
+    const st = c.status, m = c.meta;
+    const daysLeft = m.planned_end ? Math.ceil((new Date(m.planned_end + "T23:59:59") - Date.now()) / 864e5) : null;
+    $("c-kpis").innerHTML = kpiHtml([
+      [`${st.executed}/${st.total}`, `Executed · ${esc(m.name || "campaign")}`, ""],
+      [st.pass_rate == null ? "-" : `${st.pass_rate}%`, "Pass rate (of executed)", st.pass_rate >= 90 ? "ok" : st.pass_rate >= 70 ? "warn" : "bad"],
+      [st.FAIL, "Failed", st.FAIL ? "bad" : "ok"],
+      [st.BLOCKED, "Blocked", st.BLOCKED ? "warn" : "ok"],
+      [`<span class="mono" style="font-size:14px;overflow-wrap:anywhere">${esc(m.release || "-")}</span>`, "Release under test", ""],
+      [daysLeft == null ? "-" : daysLeft < 0 ? "overdue" : `${daysLeft} d`, `To planned end${m.planned_end ? " · " + esc(m.planned_end) : ""}`, daysLeft != null && daysLeft < 0 ? "bad" : ""],
+    ]);
+    $("c-bar").innerHTML = stack(st, st.total, true) +
+      `<p class="faint" style="margin:8px 0 0">${pct(st.executed, st.total)}% executed · last result ${esc(m.last_execution ? new Date(m.last_execution).toLocaleString() : "-")}</p>`;
+    $("c-legend").innerHTML = ST.map((x) => `<span><i class="s-${x}"></i>${ST_LABEL[x]} ${st[x]}</span>`).join("");
+    $("c-feat").innerHTML = `<thead><tr><th>Feature</th><th>Tests</th><th style="width:40%">Progress</th><th>Pass</th><th>Fail</th><th>Blocked</th><th>Not run</th><th>Pass rate</th></tr></thead><tbody>` +
+      st.by_feature.map((f) => { const ex = f.PASS + f.FAIL;
+        return `<tr><td><b>${esc(f.feature)}</b></td><td>${f.total}</td><td>${stack(f, f.total)}</td><td>${f.PASS}</td><td>${f.FAIL}</td><td>${f.BLOCKED}</td><td>${f.NOT_RUN}</td><td>${ex ? pct(f.PASS, ex) + "%" : "-"}</td></tr>`; }).join("") + "</tbody>";
+
+    // coverage
+    const cv = c.coverage, o = cv.overall;
+    $("v-kpis").innerHTML = kpiHtml([
+      [`${pct(o.planned, o.total)}%`, `Planned · ${o.planned}/${o.total} requirements have a test`, o.planned === o.total ? "ok" : "warn"],
+      [`${pct(o.executed, o.total)}%`, `Executed · ${o.executed}/${o.total}`, ""],
+      [`${pct(o.verified, o.total)}%`, `Verified · ${o.verified}/${o.total} all tests pass`, o.verified === o.total ? "ok" : "warn"],
+      [o.failed, "Requirements with a failing test", o.failed ? "bad" : "ok"],
+      [o.total - o.planned, "Requirements without a test", o.total - o.planned ? "warn" : "ok"],
+    ]);
+    const covBars = (rows) => rows.map((r) => {
+      const segs = [["VERIFIED", r.verified], ["FAILED", r.failed], ["PARTIAL", r.executed - r.verified - r.failed], ["NOT_EXECUTED", r.planned - r.executed], ["NO_TEST", r.total - r.planned]];
+      return `<div class="covrow"><b>${esc(r.name === "-" ? "unrated" : r.name)}</b><div class="stack">${segs.filter(([, n]) => n > 0).map(([k, n]) => `<i class="c-${k}" style="width:${n / r.total * 100}%" title="${COV_LABEL[k]}: ${n}"></i>`).join("")}</div><span class="num">${r.verified}/${r.total} verified</span></div>`;
+    }).join("") + `<div class="legend">${COV.map((k) => `<span><i class="c-${k}"></i>${COV_LABEL[k]}</span>`).join("")}</div>`;
+    $("v-feat").innerHTML = covBars(cv.by_feature);
+    $("v-asil").innerHTML = covBars(cv.by_asil.map((r) => ({...r, name: r.name === "-" ? "-" : (r.name === "QM" ? "QM" : "ASIL " + r.name)})));
+    const counts = Object.fromEntries(COV.map((k) => [k, cv.requirements.filter((r) => r.state === k).length]));
+    $("v-filters").innerHTML = [["ALL", `All ${cv.requirements.length}`], ...COV.filter((k) => counts[k]).map((k) => [k, `${COV_LABEL[k]} ${counts[k]}`])]
+      .map(([k, l]) => `<button data-f="${k}" aria-pressed="${reqFilter === k}">${l}</button>`).join("");
+    $("v-filters").querySelectorAll("button").forEach((b) => b.onclick = () => { reqFilter = b.dataset.f; renderCampaign(D.status.campaign, D.status); });
+    const RT = {VERIFIED: "ok", FAILED: "bad", PARTIAL: "warn", NOT_EXECUTED: "off", NO_TEST: "warn"};
+    $("v-reqs").innerHTML = `<thead><tr><th>Requirement</th><th>Title</th><th>Feature</th><th>ASIL</th><th>State</th><th>Tests</th></tr></thead><tbody>` +
+      cv.requirements.filter((r) => reqFilter === "ALL" || r.state === reqFilter).map((r) =>
+        `<tr><td class="mono">${esc(r.id)}</td><td style="white-space:normal">${esc(r.title)}</td><td>${esc(r.feature)}</td><td>${esc(r.asil || "-")}</td><td><span class="pill ${RT[r.state]}">${COV_LABEL[r.state]}</span></td><td class="mono" style="white-space:normal">${r.tests.map(esc).join(", ") || "-"}</td></tr>`).join("") + "</tbody>";
+
+    // defects
+    const d = c.defects, cl = d.clusters;
+    const failing = cl.reduce((a, x) => a + x.size, 0);
+    const suspect = cl.filter((x) => x.suspect_bench);
+    $("d-kpis").innerHTML = kpiHtml([
+      [cl.length, `Clusters from ${failing} failed/blocked tests`, cl.length ? "bad" : "ok"],
+      [new Set(cl.filter((x) => x.defect_id).map((x) => x.defect_id)).size, "Linked defect tickets", ""],
+      [cl.filter((x) => x.needs_ticket).length, "Clusters that need a ticket", cl.some((x) => x.needs_ticket) ? "warn" : "ok"],
+      [`${suspect.length}`, `Suspect bench · ${suspect.reduce((a, x) => a + x.size, 0)} tests`, suspect.length ? "warn" : "ok"],
+    ]);
+    const mx = d.matrix, maxv = Math.max(1, ...mx.features.flatMap((f) => mx.ecus.map((e) => mx.fails[f][e])));
+    const sick = new Set(s.ecus.filter((e) => ["VERSION_MISMATCH", "NOT_POWERED", "NO_RESPONSE", "ERROR"].includes(e.state)).map((e) => e.name));
+    $("d-heat").innerHTML = `<thead><tr><th>Feature</th>${mx.ecus.map((e) => `<th>${esc(e)}${sick.has(e) ? ' <span class="pill warn" title="unhealthy on the bench now">bench</span>' : ""}</th>`).join("")}</tr></thead><tbody>` +
+      mx.features.map((f) => `<tr><td><b>${esc(f)}</b></td>${mx.ecus.map((e) => { const v = mx.fails[f][e]; const lvl = v === 0 ? 0 : Math.min(3, Math.ceil(v / maxv * 3));
+        return `<td><span class="hc h${lvl}" title="${esc(f)} on ${esc(e)}: ${v} failed/blocked">${v || "·"}</span></td>`; }).join("")}</tr>`).join("") + "</tbody>";
+    $("d-clusters").innerHTML = cl.length ? cl.map((x) => `
+      <article class="cluster">
+        <div class="top2"><div><div class="faint">${x.defect_id ? "Defect " + esc(x.defect_id) : "No ticket yet"}</div><div class="sig">${esc(x.signature)}</div></div>
+          <div style="text-align:right"><div class="size">${x.size}</div><div class="faint">tests</div></div></div>
+        <div class="tags">${x.suspect_bench ? '<span class="pill warn">suspect bench</span>' : x.needs_ticket ? '<span class="pill bad">needs ticket</span>' : '<span class="pill off">product defect</span>'}
+          ${x.ecus.map((e) => `<span class="tag">${esc(e)}</span>`).join("")}${x.features.map((f) => `<span class="tag">${esc(f)}</span>`).join("")}
+          ${Object.entries(x.statuses).map(([k, n]) => `<span class="tag">${ST_LABEL[k] || k} ${n}</span>`).join("")}</div>
+        <div class="faint">Requirements: <span class="mono">${x.requirements.map(esc).join(", ") || "-"}</span></div>
+        <ul>${x.tests.map((t) => `<li><span class="mono">${esc(t.id)}</span> ${esc(t.title)}</li>`).join("")}</ul>
+        ${x.suspect_bench ? `<div class="why"><b>Check the bench before raising a defect.</b> ${x.bench_reasons.map(esc).join("; ")}</div>` : ""}
+      </article>`).join("") : '<p class="muted">No failed or blocked tests.</p>';
+    return {failing, clusters: cl.length, fails: st.FAIL + st.BLOCKED};
+  }
+
+  function setView(v) {
+    const views = ["bench", "campaign", "coverage", "defects"];
+    if (!views.includes(v) || (v !== "bench" && !(D.status.campaign && !D.status.campaign.error))) v = "bench";
+    views.forEach((x) => { $("view-" + x).hidden = x !== v; });
+    document.querySelectorAll("#tabs button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.view === v)));
+    try { if (location.hash !== "#" + v) history.replaceState(null, "", "#" + v); } catch (_) {}
+  }
+
+  function renderTabs() {
+    const c = D.status.campaign;
+    const has = c && !c.error && c.status;
+    document.querySelectorAll("#tabs button").forEach((b) => {
+      const v = b.dataset.view;
+      b.hidden = v !== "bench" && !has;
+      let badge = "";
+      if (v === "bench") badge = `<span class="n ${tone(D.status.overall)}">${D.status.overall}</span>`;
+      if (has && v === "campaign") badge = `<span class="n off">${c.status.executed}/${c.status.total}</span>`;
+      if (has && v === "coverage") badge = `<span class="n off">${pct(c.coverage.overall.verified, c.coverage.overall.total)}%</span>`;
+      if (has && v === "defects") badge = `<span class="n ${c.defects.clusters.length ? "bad" : "ok"}">${c.defects.clusters.length}</span>`;
+      b.innerHTML = {bench: "Bench readiness", campaign: "Campaign status", coverage: "Coverage", defects: "Defect clustering"}[v] + badge;
+      b.onclick = () => setView(v);
+    });
+    if (has) renderCampaign(c, D.status);
+  }
+
   function tick() {
     const age = Math.max(0, Math.round((Date.now() - new Date(D.status.timestamp)) / 1000));
     const txt = age < 60 ? `${age} s ago` : age < 3600 ? `${Math.round(age / 60)} min ago` : new Date(D.status.timestamp).toLocaleString();
@@ -274,10 +451,12 @@ footer{margin-top:20px;color:var(--faint);font-size:12px}
   }
 
   async function poll() {
-    try { D = await (await fetch("api/status", {cache: "no-store"})).json(); render(); } catch (_) { /* keep last view; tick() shows staleness */ }
+    try { D = await (await fetch("api/status", {cache: "no-store"})).json(); renderAll(); } catch (_) { /* keep last view; tick() shows staleness */ }
   }
 
-  render(); tick(); setInterval(tick, 1000);
+  const renderAll = () => { render(); renderTabs(); };
+  renderAll(); setView(location.hash.slice(1)); tick(); setInterval(tick, 1000);
+  window.addEventListener("hashchange", () => setView(location.hash.slice(1)));
   if (D.live) {
     const b = $("refresh"); b.hidden = false;
     b.onclick = async () => { b.disabled = true; b.textContent = "Checking…";

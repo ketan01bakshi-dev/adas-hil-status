@@ -35,6 +35,27 @@ this PC only; pass `--host 0.0.0.0` to share it on the lab network.
 
 `--html out/status.html` writes the same dashboard as a single static snapshot file.
 
+### Campaign, coverage and defect clustering
+
+With a `[campaign]` section in the config, the dashboard gets three more tabs, fed by two CSV exports
+from the test tool (`data/campaign/` has a synthetic ADAS example: ACC, AEB, LKA, TSR, diagnostics):
+
+- `requirements.csv`: `id, title, feature, asil`
+- `results.csv`: `test_id, title, requirements (; separated), feature, ecu, status, defect_id, failure_signature, duration_s, executed_at`
+  with status `PASS`, `FAIL`, `BLOCKED` or `NOT_RUN`.
+
+| Tab | Shows |
+|---|---|
+| Campaign status | executed/total, pass rate, failed, blocked, release under test, days to planned end, progress per feature |
+| Coverage | requirements planned / executed / verified (all linked tests pass), by feature and by ASIL, filterable requirement list; results pointing at unknown requirements are reported as a traceability gap |
+| Defect clustering | failures by feature × ECU, and clusters of failed/blocked tests grouped by defect ID, or by failure signature with numbers masked when no ticket exists yet |
+
+The defect view uses the bench status: a cluster whose ECUs are all unhealthy on the bench right now
+(wrong software, not powered, silent) is flagged **suspect bench**, with the reason, so the environment
+gets checked before a product defect is raised. Untracked clusters on a healthy bench are flagged
+**needs ticket**. The campaign files are re-read on every check. This is visibility for the test manager;
+nothing signs a release off automatically, and the exit code reflects the bench only.
+
 `config/rig.toml` ships with `backend = "sim"`: a virtual bench (simulated ECUs answering real UDS over a
 python-can virtual bus and DoIP on localhost) with three demo faults: the camera has an older SW, the LIDAR
 is switched off, and an unlisted ECU answers at 0x7EE. Delete the `[sim.*]` sections for a clean PASS.

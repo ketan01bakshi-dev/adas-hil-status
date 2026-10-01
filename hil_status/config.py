@@ -87,6 +87,7 @@ class RigConfig:
     xil: XilSettings = field(default_factory=XilSettings)
     ecus: dict[str, EcuAccess] = field(default_factory=dict)  # key: casefolded name
     sim: dict = field(default_factory=dict)
+    campaign: dict = field(default_factory=dict)  # name, release, results, requirements (paths relative to config)
     base_dir: Path = Path(".")
 
     def access_for(self, name: str) -> EcuAccess | None:
@@ -123,8 +124,11 @@ def parse_config(data: dict, base_dir: Path = Path(".")) -> RigConfig:
         can=_pick(CanSettings, data.get("can", {}), "can"),
         xil=_pick(XilSettings, data.get("xil", {}), "xil"),
         sim=data.get("sim", {}),
+        campaign=data.get("campaign", {}),
         base_dir=base_dir,
     )
+    if cfg.campaign and not {"results", "requirements"} <= set(cfg.campaign):
+        raise ConfigError("[campaign] needs both results and requirements")
     if rig:
         raise ConfigError(f"[rig] unknown keys: {', '.join(sorted(rig))}")
     if cfg.backend not in ("sim", "xil"):

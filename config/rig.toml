@@ -64,6 +64,15 @@ port = 80
 current_var = "Model Root/PowerSupply/LIDAR/I_meas/Value"
 min_current_a = 0.30
 
+# ---- Campaign view (optional): test results + requirements exported as CSV ----
+# Synthetic example data. Results are re-read on every dashboard check.
+[campaign]
+name = "ADAS SOP-2 regression"
+release = "ADAS_SW_07.02.01"
+planned_end = "2026-10-03"
+requirements = "../data/campaign/requirements.csv"
+results = "../data/campaign/results.csv"
+
 # ---- Virtual bench only (ignored by the xil backend): demo faults ----
 [sim]
 unknown_responders = [0x7EE]       # an ECU on the bus that is not in the rig config

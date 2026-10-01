@@ -1,0 +1,25 @@
+id,title,feature,asil
+REQ-ACC-001,Engage ACC above 30 km/h on driver request,ACC,B
+REQ-ACC-002,Disengage ACC when the brake pedal is pressed,ACC,B
+REQ-ACC-003,Hold the set speed within 2 km/h on a flat road,ACC,QM
+REQ-ACC-004,Follow a lead vehicle at the selected time gap,ACC,A
+REQ-ACC-005,Allow driver override with the accelerator,ACC,A
+REQ-ACC-006,Deactivate ACC on radar blockage,ACC,B
+REQ-AEB-001,Warn at TTC 2.6 s for a stationary target,AEB,B
+REQ-AEB-002,Partial braking at TTC 1.6 s,AEB,B
+REQ-AEB-003,Full braking at TTC 0.9 s,AEB,B
+REQ-AEB-004,Detect pedestrians with camera-radar fusion,AEB,B
+REQ-AEB-005,Confirm targets with LIDAR in low light,AEB,B
+REQ-AEB-006,Suppress AEB on driver steering evasion,AEB,A
+REQ-LKA-001,Detect solid and dashed lane markings,LKA,A
+REQ-LKA-002,Apply corrective torque at lane departure,LKA,B
+REQ-LKA-003,Warn after 15 s hands-off,LKA,A
+REQ-LKA-004,Suppress LKA with the indicator on,LKA,QM
+REQ-LKA-005,Degrade LKA on camera blockage,LKA,B
+REQ-TSR-001,Recognise speed-limit signs,TSR,QM
+REQ-TSR-002,Show the recognised limit in the cluster within 1 s,TSR,QM
+REQ-TSR-003,Handle supplementary signs (time and weather),TSR,QM
+REQ-TSR-004,Feed the speed limit to ACC,TSR,A
+REQ-DIAG-001,Set a DTC on sensor communication loss,DIAG,B
+REQ-DIAG-002,Identification DIDs readable in the default session,DIAG,QM
+REQ-DIAG-003,Set a DTC on sensor misalignment,DIAG,A

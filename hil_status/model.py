@@ -72,6 +72,7 @@ class RigStatus:
     ecus: list[EcuStatus] = field(default_factory=list)
     unknown_responders: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
+    campaign: dict = field(default_factory=dict)  # campaign status / coverage / defect clusters, if configured
 
     def to_dict(self) -> dict:
         data = asdict(self)

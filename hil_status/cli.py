@@ -10,6 +10,7 @@ import argparse
 import sys
 from pathlib import Path
 
+from .campaign import attach_campaign
 from .config import ConfigError, load_config
 from .inventory import InventoryError, load_inventory
 from .model import EXIT_CODES
@@ -53,6 +54,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     status = collect(cfg, inventory, backend, inventory_file=str(inv_path))
+    attach_campaign(cfg, status)
 
     if not args.quiet:
         print(to_console(status))

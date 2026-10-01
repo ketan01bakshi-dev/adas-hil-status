@@ -15,7 +15,9 @@ import time
 from collections import deque
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import urlsplit
 
+from .campaign import attach_campaign
 from .config import RigConfig
 from .inventory import InventoryError, load_inventory
 from .model import InventoryEntry, RigStatus
@@ -81,6 +83,7 @@ class Monitor:
                     raise
                 note = f"inventory file unreadable, showing last good copy: {exc}"
             status = collect(self.cfg, self._inventory, self.backend, str(self.inventory_path))
+            attach_campaign(self.cfg, status)  # results file re-read every check: live campaign progress
             if note:
                 status.notes.insert(0, note)
             self.status = status
@@ -120,17 +123,20 @@ def make_handler(mon: Monitor):
             self.wfile.write(body)
 
         def do_GET(self):
+            path = urlsplit(self.path).path
             if mon.status is None:
                 return self._send(503, b"first check still running, reload in a few seconds", "text/plain")
-            if self.path in ("/", "/index.html"):
+            if path in ("/", "/index.html"):
                 html = to_html(mon.status, list(mon.history), live=True, interval_s=mon.interval_s)
                 return self._send(200, html.encode("utf-8"), "text/html; charset=utf-8")
-            if self.path == "/api/status":
+            if path == "/favicon.ico":
+                return self._send(204, b"", "image/x-icon")
+            if path == "/api/status":
                 return self._send(200, json.dumps(mon.payload(), default=str).encode(), "application/json")
             self._send(404, b"not found", "text/plain")
 
         def do_POST(self):
-            if self.path != "/api/refresh":
+            if urlsplit(self.path).path != "/api/refresh":
                 return self._send(404, b"not found", "text/plain")
             mon.refresh_now()
             self._send(200, json.dumps({"ok": True}).encode(), "application/json")

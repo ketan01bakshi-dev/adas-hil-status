@@ -6,6 +6,7 @@ import json
 from html import escape
 from pathlib import Path
 
+from .campaign import campaign_console
 from .model import EcuState, EcuStatus, RigStatus
 
 TEMPLATE = Path(__file__).with_name("dashboard.html")
@@ -56,6 +57,8 @@ def to_console(s: RigStatus) -> str:
         out += ["", *(f"  note: {n}" for n in s.notes)]
     connected = sum(e.connected for e in s.ecus)
     out += ["", f"{connected}/{len(s.ecus)} inventory ECUs connected."]
+    if s.campaign:
+        out += ["", *campaign_console(s.campaign)]
     return "\n".join(out)
 
 

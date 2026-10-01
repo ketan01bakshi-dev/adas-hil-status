@@ -1,0 +1,35 @@
+test_id,title,requirements,feature,ecu,status,defect_id,failure_signature,duration_s,executed_at
+TC-ACC-001,Engage at 31 km/h,REQ-ACC-001,ACC,ADAS_ECU,PASS,,,42,2026-09-29T09:05:00
+TC-ACC-002,No engage at 29 km/h,REQ-ACC-001,ACC,ADAS_ECU,PASS,,,40,2026-09-29T09:07:00
+TC-ACC-003,Brake pedal disengages ACC,REQ-ACC-002,ACC,ADAS_ECU,FAIL,ADAS-1042,ACC_Status stays ACTIVE after brake pedal,55,2026-09-29T09:10:00
+TC-ACC-004,Brake pedal in a curve,REQ-ACC-002,ACC,ADAS_ECU,FAIL,ADAS-1042,ACC_Status stays ACTIVE after brake pedal,58,2026-09-29T09:13:00
+TC-ACC-005,Hold set speed 80 km/h,REQ-ACC-003,ACC,ADAS_ECU,PASS,,,120,2026-09-29T09:20:00
+TC-ACC-006,Hold set speed 120 km/h,REQ-ACC-003,ACC,ADAS_ECU,PASS,,,120,2026-09-29T09:23:00
+TC-ACC-007,Follow at 1.8 s time gap,REQ-ACC-004,ACC,FRONT_RADAR,PASS,,,95,2026-09-29T09:30:00
+TC-ACC-008,Lead vehicle cut-out at 150 m,REQ-ACC-004,ACC,FRONT_RADAR,FAIL,ADAS-1051,Radar target dropout beyond 140 m,80,2026-09-29T09:34:00
+TC-ACC-009,Approach lead vehicle from 160 m,REQ-ACC-004,ACC,FRONT_RADAR,FAIL,ADAS-1051,Radar target dropout beyond 150 m,82,2026-09-29T09:37:00
+TC-ACC-010,Accelerator override,REQ-ACC-005,ACC,ADAS_ECU,PASS,,,45,2026-09-29T09:40:00
+TC-ACC-011,Adopt speed limit from TSR,REQ-TSR-004;REQ-ACC-001,ACC,ADAS_ECU,NOT_RUN,,,0,
+TC-AEB-001,Warning for stationary car at 50 km/h,REQ-AEB-001,AEB,FRONT_RADAR,PASS,,,38,2026-09-30T10:02:00
+TC-AEB-002,Partial braking at 50 km/h,REQ-AEB-002,AEB,ADAS_ECU,PASS,,,38,2026-09-30T10:05:00
+TC-AEB-003,Full braking at 50 km/h,REQ-AEB-003,AEB,ADAS_ECU,PASS,,,40,2026-09-30T10:08:00
+TC-AEB-004,Full braking at 70 km/h,REQ-AEB-003,AEB,ADAS_ECU,FAIL,ADAS-1060,Brake request 180 ms later than the TTC threshold,41,2026-09-30T10:11:00
+TC-AEB-005,Pedestrian crossing by day,REQ-AEB-004,AEB,FRONT_CAMERA,FAIL,,Pedestrian not fused: camera object list empty,35,2026-09-30T10:15:00
+TC-AEB-006,Pedestrian crossing at dusk,REQ-AEB-004,AEB,FRONT_CAMERA,FAIL,,Pedestrian not fused: camera object list empty,35,2026-09-30T10:18:00
+TC-AEB-007,Low-light car confirmed by LIDAR,REQ-AEB-005,AEB,LIDAR,BLOCKED,,LIDAR not reachable,0,2026-09-30T10:20:00
+TC-AEB-008,Low-light cyclist confirmed by LIDAR,REQ-AEB-005,AEB,LIDAR,BLOCKED,,LIDAR not reachable,0,2026-09-30T10:21:00
+TC-AEB-009,Steering evasion suppresses AEB,REQ-AEB-006,AEB,ADAS_ECU,PASS,,,44,2026-09-30T10:25:00
+TC-LKA-001,Solid lane markings,REQ-LKA-001,LKA,FRONT_CAMERA,FAIL,,Lane marking confidence below 0.4,60,2026-09-30T11:00:00
+TC-LKA-002,Dashed lane markings,REQ-LKA-001,LKA,FRONT_CAMERA,FAIL,,Lane marking confidence below 0.35,60,2026-09-30T11:03:00
+TC-LKA-003,Departure left at 0.3 m/s,REQ-LKA-002,LKA,ADAS_ECU,PASS,,,50,2026-09-30T11:07:00
+TC-LKA-004,Departure right at 0.5 m/s,REQ-LKA-002,LKA,ADAS_ECU,PASS,,,50,2026-09-30T11:10:00
+TC-LKA-005,Hands-off warning after 15 s,REQ-LKA-003,LKA,ADAS_ECU,PASS,,,30,2026-09-30T11:13:00
+TC-LKA-006,Indicator suppresses LKA,REQ-LKA-004,LKA,ADAS_ECU,PASS,,,30,2026-09-30T11:15:00
+TC-LKA-007,Camera blockage degrades LKA,REQ-LKA-005,LKA,FRONT_CAMERA,NOT_RUN,,,0,
+TC-TSR-001,Speed limit 80 sign,REQ-TSR-001,TSR,FRONT_CAMERA,FAIL,,Sign class not recognised,25,2026-10-01T09:00:00
+TC-TSR-002,Speed limit 50 sign at night,REQ-TSR-001,TSR,FRONT_CAMERA,FAIL,,Sign class not recognised,25,2026-10-01T09:02:00
+TC-TSR-003,Cluster display latency,REQ-TSR-002,TSR,FRONT_CAMERA,PASS,,,20,2026-10-01T09:05:00
+TC-DIAG-001,Radar communication loss DTC,REQ-DIAG-001,DIAG,FRONT_RADAR,PASS,,,30,2026-10-01T09:20:00
+TC-DIAG-002,Camera communication loss DTC,REQ-DIAG-001,DIAG,FRONT_CAMERA,PASS,,,30,2026-10-01T09:23:00
+TC-DIAG-003,LIDAR communication loss DTC,REQ-DIAG-001,DIAG,LIDAR,BLOCKED,,LIDAR not reachable,0,2026-10-01T09:25:00
+TC-DIAG-004,Identification DIDs on all ECUs,REQ-DIAG-002,DIAG,ADAS_ECU,PASS,,,15,2026-10-01T09:30:00

@@ -97,7 +97,7 @@ def test_live_server_endpoints():
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     base = f"http://127.0.0.1:{httpd.server_address[1]}"
     try:
-        page = urllib.request.urlopen(base + "/").read().decode()
+        page = urllib.request.urlopen(base + "/?v=1").read().decode()  # query strings must not 404
         assert '"live": true' in page
         req = urllib.request.Request(base + "/api/refresh", method="POST")
         assert json.loads(urllib.request.urlopen(req).read())["ok"] is True
